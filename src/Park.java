@@ -46,13 +46,5 @@ public class Park {
         }
     }
 
-    public static void main(String[] args) {
-        Park amusementPark = new Park("Веселый Город", 3);
 
-        amusementPark.addAttraction(0, "Колесо обозрения", "10:00-20:00", 500.0);
-        amusementPark.addAttraction(1, "Американские горки", "11:00-19:00", 700.0);
-        amusementPark.addAttraction(2, "Башня падения", "12:00-18:00", 600.0);
-
-        amusementPark.displayParkInfo();
-    }
 }
