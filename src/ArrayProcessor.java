@@ -1,18 +1,5 @@
-class MyArraySizeException extends Exception {
-    public MyArraySizeException(String message) {
-        super(message);
-    }
-}
-
-class MyArrayDataException extends Exception {
-    public MyArrayDataException(String message) {
-        super(message);
-    }
-}
-
 public class ArrayProcessor {
     public static int processArray(String[][] array) throws MyArraySizeException, MyArrayDataException {
-        // Проверка размера массива
         if (array.length != 4) {
             throw new MyArraySizeException("Размер массива должен быть 4x4");
         }
@@ -84,7 +71,7 @@ public class ArrayProcessor {
 
         try {
             String[][] array = new String[4][4];
-            System.out.println(array[5][0]); // Попытка доступа к несуществующему индексу
+            System.out.println(array[5][0]);
         } catch (ArrayIndexOutOfBoundsException e) {
             System.out.println("Ошибка доступа к массиву: " + e.getMessage());
         }
