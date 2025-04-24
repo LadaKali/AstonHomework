@@ -35,6 +35,12 @@
             <version>1.5.6</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -47,6 +53,7 @@
                     <source>24</source>
                     <target>24</target>
                     <encoding>UTF-8</encoding>
+                    <compilerArgs>--enable-preview</compilerArgs>
                 </configuration>
             </plugin>
             <plugin>
