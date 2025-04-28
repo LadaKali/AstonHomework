@@ -18,8 +18,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Epic("Тестирование сайта mts.by")
-@Feature("Проверка блока 'Онлайн пополнение без комиссии'")
+
 public class MtsByPaymentBlockTest {
     private static final Logger logger = LoggerFactory.getLogger(MtsByPaymentBlockTest.class);
     private WebDriver driver;
@@ -40,7 +39,6 @@ public class MtsByPaymentBlockTest {
     }
 
     @BeforeEach
-    @Step("Инициализация браузера и открытие страницы")
     public void setUp() {
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver();
@@ -52,16 +50,12 @@ public class MtsByPaymentBlockTest {
     }
 
     @Test
-    @Story("Проверка заголовка блока")
-    @Description("Тест проверяет заголовок блока на соответствие")
     public void testPaymentBlockTitle() {
         assertEquals(TestData.BLOCK_TITLE, paymentPage.getBlockTitle(), "Заголовок блока не соответствует");
     }
 
 
     @Test
-    @Story("Проверка логотипов платёжных систем")
-    @Description("Проверка количества логотипов и их отображения")
     public void testPaymentLogos() {
         assertEquals(TestData.EXPECTED_LOGO_COUNT, paymentPage.getPaymentLogosCount(),
                 "Неверное количество иконок платёжных систем");
@@ -78,8 +72,6 @@ public class MtsByPaymentBlockTest {
     }
 
     @Test
-    @Story("Проверка ссылка 'Подробнее о сервисе'")
-    @Description("Проверка URL, заголовка и контента")
     public void testDetailsLink() {
         paymentPage.clickDetailsLink();
 
@@ -97,8 +89,6 @@ public class MtsByPaymentBlockTest {
 
 
     @Test
-    @Story("Проверка полей и вкладок")
-    @Description("Проверка плэйсхолдеров и ввода данных")
     public void testPaymentOptions() {
         processPaymentOption("Услуги связи", "Номер телефона", TestData.PHONE_NUMBER);
         processPaymentOption("Домашний интернет", "Номер абонента", TestData.ACCOUNT_NUMBER_INTERNET);
@@ -154,7 +144,6 @@ public class MtsByPaymentBlockTest {
 
 
     @AfterEach
-    @Step("Закрытие браузера")
     public void tearDown() {
         if (driver != null) {
             driver.quit();
