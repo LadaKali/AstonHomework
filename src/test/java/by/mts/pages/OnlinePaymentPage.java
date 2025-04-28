@@ -7,9 +7,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
 
@@ -76,6 +73,20 @@ public class OnlinePaymentPage {
     public int getPaymentLogosCount() {
         List<WebElement> logos = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(paymentLogosLocator));
         return logos.size();
+    }
+
+    public List<WebElement> getPaymentLogos(){
+        wait.until(ExpectedConditions.visibilityOfElementLocated(paymentLogosLocator));
+
+        List<WebElement> logos = driver.findElements(paymentLogosLocator);
+
+        System.out.println("Найдено логотипов: " + logos.size());
+        for (WebElement logo : logos) {
+            System.out.println("Логотип: " + logo.getAttribute("alt") + ", отображается: " + logo.isDisplayed());
+        }
+
+        return logos;
+
     }
 
     public void clickDetailsLink() {

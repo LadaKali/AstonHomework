@@ -11,11 +11,15 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.qameta.allure.*;
 
 import java.time.Duration;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Epic("Тестирование сайта mts.by")
+@Feature("Проверка блока 'Онлайн пополнение без комиссии'")
 public class MtsByPaymentBlockTest {
     private static final Logger logger = LoggerFactory.getLogger(MtsByPaymentBlockTest.class);
     private WebDriver driver;
@@ -31,9 +35,12 @@ public class MtsByPaymentBlockTest {
         public static final String ACCOUNT_NUMBER_DEBT = "123456789";
         public static final String AMOUNT = "30.00";
         public static final int EXPECTED_LOGO_COUNT = 5;
+        public static final String DETAILS_URL = "https://www.mts.by/help/poryadok-oplaty-i-bezopasnost-internet-platezhey/";
+        public static final String DETAILS_PAGE_TITLE = "Оплата банковской картой";
     }
 
     @BeforeEach
+    @Step("Инициализация браузера и открытие страницы")
     public void setUp() {
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver();
@@ -42,42 +49,66 @@ public class MtsByPaymentBlockTest {
         paymentPage = new OnlinePaymentPage(driver, wait);
         driver.get(TestData.BASE_URL);
         OnlinePaymentPage.handleCookiePopup();
-        try {
-            WebElement overlay = driver.findElement(By.cssSelector(".modal-overlay, .popup, .banner"));
-            if (overlay.isDisplayed()) {
-                ((JavascriptExecutor) driver).executeScript("arguments[0].style.display='none';", overlay);
-                logger.info("Закрыт оверлей, перекрывающий страницу");
-            }
-        } catch (Exception e) {
-            logger.info("Оверлей не найден или не отображается");
+    }
+
+    @Test
+    @Story("Проверка заголовка блока")
+    @Description("Тест проверяет заголовок блока на соответствие")
+    public void testPaymentBlockTitle() {
+        assertEquals(TestData.BLOCK_TITLE, paymentPage.getBlockTitle(), "Заголовок блока не соответствует");
+    }
+
+
+    @Test
+    @Story("Проверка логотипов платёжных систем")
+    @Description("Проверка количества логотипов и их отображения")
+    public void testPaymentLogos() {
+        assertEquals(TestData.EXPECTED_LOGO_COUNT, paymentPage.getPaymentLogosCount(),
+                "Неверное количество иконок платёжных систем");
+
+        assertEquals(TestData.EXPECTED_LOGO_COUNT, paymentPage.getPaymentLogosCount());
+
+        List<String> expectedLogos = List.of("Visa", "Verified By Visa", "MasterCard", "MasterCard Secure Code", "Белкарт");
+        List<WebElement> logoElements = paymentPage.getPaymentLogos();
+        for (String logo : expectedLogos) {
+            boolean logoFound = logoElements.stream()
+                    .anyMatch(element -> element.getAttribute("alt").contains(logo) && element.isDisplayed());
+            assertTrue(logoFound, "Логотип " + logo + " не найден или не отображается");
         }
     }
 
     @Test
-    public void testPaymentBlock() {
-        logger.info("Проверка заголовка блока");
-        assertEquals(TestData.BLOCK_TITLE, paymentPage.getBlockTitle(), "Заголовок блока не соответствует");
-
-        logger.info("Проверка количества иконок платёжных систем");
-        assertEquals(TestData.EXPECTED_LOGO_COUNT, paymentPage.getPaymentLogosCount(),
-                "Неверное количество иконок платёжных систем");
-
-        logger.info("Проверка ссылки 'Подробнее о сервисе'");
+    @Story("Проверка ссылка 'Подробнее о сервисе'")
+    @Description("Проверка URL, заголовка и контента")
+    public void testDetailsLink() {
         paymentPage.clickDetailsLink();
-        wait.until(ExpectedConditions.urlContains("help"));
-        assertTrue(driver.getCurrentUrl().toLowerCase().contains("help"), "URL не содержит 'help'");
-        driver.navigate().back();
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h2[contains(normalize-space(.), 'Онлайн пополнение')]")));
-        logger.info("Возвращены на страницу с блоком");
 
-        testPaymentOption("Услуги связи", "Номер телефона", TestData.PHONE_NUMBER);
-        testPaymentOption("Домашний интернет", "Номер абонента", TestData.ACCOUNT_NUMBER_INTERNET);
-        testPaymentOption("Рассрочка", "Номер счета на 44", TestData.ACCOUNT_NUMBER_INSTALLMENT);
-        testPaymentOption("Задолженность", "Номер счета на 2073", TestData.ACCOUNT_NUMBER_DEBT);
+        wait.until(ExpectedConditions.urlToBe(TestData.DETAILS_URL));
+        assertEquals(TestData.DETAILS_URL, driver.getCurrentUrl(), "URL не соответствует");
+
+        WebElement pageTitle = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//h3[contains(normalize-space(.), '" + TestData.DETAILS_PAGE_TITLE + "')]")));
+        assertTrue(pageTitle.isDisplayed(), "Заголовок страницы не отображается");
+
+        driver.navigate().back();
+
+
     }
 
-    private void testPaymentOption(String option, String expectedIdentifierPlaceholder, String identifier) {
-        logger.info("Тестирование вкладки: {}", option);
+
+    @Test
+    @Story("Проверка полей и вкладок")
+    @Description("Проверка плэйсхолдеров и ввода данных")
+    public void testPaymentOptions() {
+        processPaymentOption("Услуги связи", "Номер телефона", TestData.PHONE_NUMBER);
+        processPaymentOption("Домашний интернет", "Номер абонента", TestData.ACCOUNT_NUMBER_INTERNET);
+        processPaymentOption("Рассрочка", "Номер счета на 44", TestData.ACCOUNT_NUMBER_INSTALLMENT);
+        processPaymentOption("Задолженность", "Номер счета на 2073", TestData.ACCOUNT_NUMBER_DEBT);
+
+    }
+
+
+    private void processPaymentOption(String option, String expectedIdentifierPlaceholder, String identifier) {
         paymentPage.selectPaymentOption(option);
 
         assertEquals(expectedIdentifierPlaceholder, paymentPage.getIdentifierFieldPlaceholder(option),
@@ -98,23 +129,23 @@ public class MtsByPaymentBlockTest {
                     "Идентификатор во всплывающем окне не соответствует для " + option);
             logger.info("Всплывающее окно проверено для {}", option);
             paymentPage.closePopup();
-        } else if(option.equals("Домашний интернет")) {
+        } else if (option.equals("Домашний интернет")) {
             logger.info("Домашний интернет!!!");
-            logger.info("Плейсхолдер поля "+expectedIdentifierPlaceholder+": " + paymentPage.getIdentifierFieldPlaceholder(option));
+            logger.info("Плейсхолдер поля " + expectedIdentifierPlaceholder + ": " + paymentPage.getIdentifierFieldPlaceholder(option));
             logger.info("Плейсхолдер поля Сумма: " + paymentPage.getAmountFieldPlaceholder(option));
             logger.info("Плейсхолдер поля Email: " + paymentPage.getEmailFieldPlaceholder(option));
 
 
-        } else if(option.equals("Рассрочка")){
+        } else if (option.equals("Рассрочка")) {
             logger.info("Рассрочка!!!");
-            logger.info("Плейсхолдер поля "+expectedIdentifierPlaceholder+": " + paymentPage.getIdentifierFieldPlaceholder(option));
+            logger.info("Плейсхолдер поля " + expectedIdentifierPlaceholder + ": " + paymentPage.getIdentifierFieldPlaceholder(option));
             logger.info("Плейсхолдер поля Сумма: " + paymentPage.getAmountFieldPlaceholder(option));
             logger.info("Плейсхолдер поля Email: " + paymentPage.getEmailFieldPlaceholder(option));
 
 
         } else if (option.equals("Задолженность")) {
             logger.info("Задолженность!!!");
-            logger.info("Плейсхолдер поля "+expectedIdentifierPlaceholder+": " + paymentPage.getIdentifierFieldPlaceholder(option));
+            logger.info("Плейсхолдер поля " + expectedIdentifierPlaceholder + ": " + paymentPage.getIdentifierFieldPlaceholder(option));
             logger.info("Плейсхолдер поля Сумма: " + paymentPage.getAmountFieldPlaceholder(option));
             logger.info("Плейсхолдер поля Email: " + paymentPage.getEmailFieldPlaceholder(option));
 
@@ -123,6 +154,7 @@ public class MtsByPaymentBlockTest {
 
 
     @AfterEach
+    @Step("Закрытие браузера")
     public void tearDown() {
         if (driver != null) {
             driver.quit();
