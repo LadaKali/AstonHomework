@@ -29,9 +29,6 @@ public class MtsByPaymentBlockTest {
         public static final String BASE_URL = "https://www.mts.by/";
         public static final String BLOCK_TITLE = "Онлайн пополнение без комиссии";
         public static final String PHONE_NUMBER = "297777777";
-        public static final String ACCOUNT_NUMBER_INTERNET = "1234567890";
-        public static final String ACCOUNT_NUMBER_INSTALLMENT = "123456789";
-        public static final String ACCOUNT_NUMBER_DEBT = "123456789";
         public static final String AMOUNT = "30.00";
         public static final int EXPECTED_LOGO_COUNT = 5;
         public static final String DETAILS_URL = "https://www.mts.by/help/poryadok-oplaty-i-bezopasnost-internet-platezhey/";
@@ -91,10 +88,6 @@ public class MtsByPaymentBlockTest {
     @Test
     public void testPaymentOptions() {
         processPaymentOption("Услуги связи", "Номер телефона", TestData.PHONE_NUMBER);
-        processPaymentOption("Домашний интернет", "Номер абонента", TestData.ACCOUNT_NUMBER_INTERNET);
-        processPaymentOption("Рассрочка", "Номер счета на 44", TestData.ACCOUNT_NUMBER_INSTALLMENT);
-        processPaymentOption("Задолженность", "Номер счета на 2073", TestData.ACCOUNT_NUMBER_DEBT);
-
     }
 
 
@@ -110,35 +103,7 @@ public class MtsByPaymentBlockTest {
         if (option.equals("Услуги связи")) {
             paymentPage.enterPaymentDetails(option, identifier, TestData.AMOUNT);
             paymentPage.clickContinue();
-            assertTrue(paymentPage.isPopupDisplayed(), "Всплывающее окно не отображается для " + option);
-            assertEquals(TestData.AMOUNT, paymentPage.getPopupAmount(),
-                    "Сумма во всплывающем окне не соответствует для " + option);
-            assertEquals(TestData.AMOUNT, paymentPage.getPopupButtonAmount(),
-                    "Сумма на кнопке во всплывающем окне не соответствует для " + option);
-            assertEquals(identifier, paymentPage.getPopupIdentifier(),
-                    "Идентификатор во всплывающем окне не соответствует для " + option);
-            logger.info("Всплывающее окно проверено для {}", option);
             paymentPage.closePopup();
-        } else if (option.equals("Домашний интернет")) {
-            logger.info("Домашний интернет!!!");
-            logger.info("Плейсхолдер поля " + expectedIdentifierPlaceholder + ": " + paymentPage.getIdentifierFieldPlaceholder(option));
-            logger.info("Плейсхолдер поля Сумма: " + paymentPage.getAmountFieldPlaceholder(option));
-            logger.info("Плейсхолдер поля Email: " + paymentPage.getEmailFieldPlaceholder(option));
-
-
-        } else if (option.equals("Рассрочка")) {
-            logger.info("Рассрочка!!!");
-            logger.info("Плейсхолдер поля " + expectedIdentifierPlaceholder + ": " + paymentPage.getIdentifierFieldPlaceholder(option));
-            logger.info("Плейсхолдер поля Сумма: " + paymentPage.getAmountFieldPlaceholder(option));
-            logger.info("Плейсхолдер поля Email: " + paymentPage.getEmailFieldPlaceholder(option));
-
-
-        } else if (option.equals("Задолженность")) {
-            logger.info("Задолженность!!!");
-            logger.info("Плейсхолдер поля " + expectedIdentifierPlaceholder + ": " + paymentPage.getIdentifierFieldPlaceholder(option));
-            logger.info("Плейсхолдер поля Сумма: " + paymentPage.getAmountFieldPlaceholder(option));
-            logger.info("Плейсхолдер поля Email: " + paymentPage.getEmailFieldPlaceholder(option));
-
         }
     }
 

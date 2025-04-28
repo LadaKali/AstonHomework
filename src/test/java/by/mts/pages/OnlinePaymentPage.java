@@ -30,7 +30,6 @@ public class OnlinePaymentPage {
 
     private final By phoneFieldLocator = By.id("connection-phone");
     private final By amountFieldLocator = By.id("connection-sum");
-    private final By emailFieldLocator = By.id("connection-email");
     private final By installmentAmountFieldLocator = By.id("instalment-sum");
     private final By accountNumberFieldForInternetLocator = By.id("internet-phone");
     private final By accountNumberFieldForInstallmentLocator = By.id("score-instalment");
@@ -38,12 +37,7 @@ public class OnlinePaymentPage {
     private final By continueButtonLocator = By.cssSelector(".button.button__default");
 
     private final By iframeLocator = By.cssSelector("iframe.bepaid-iframe");
-    private final By popupLocator = By.cssSelector("body > app-root > div");
-    private final By popupAmountLocator = By.cssSelector("body > app-root > div > div > div > app-payment-container > section > div > div > div.pay-description__actions > div.pay-description__cost > span");
-    private final By popupIdentifierLocator = By.cssSelector(".pay-description__text span");
-    private final By popupButtonAmountLocator = By.cssSelector("body > app-root > div > div > div > app-payment-container > section > div > app-card-page > div > div.card-page__card > button");
     private final By popupCloseButtonLocator = By.cssSelector("body > app-root > div > div > app-header > header > div > app-back-navigation > div > div > svg-icon");
-    private final By popupLogosLocator = By.cssSelector(".icons-container img");
 
     public OnlinePaymentPage(WebDriver driver, WebDriverWait wait) {
         this.driver = driver;
@@ -230,30 +224,6 @@ public class OnlinePaymentPage {
         return amountField.getAttribute("placeholder");
     }
 
-    public String getEmailFieldPlaceholder(@NotNull String option) {
-        By locator;
-//        By locator = option.equals("Рассрочка") ? installmentAmountFieldLocator : amountFieldLocator;
-        switch (option) {
-            case "Услуги связи":
-                locator = emailFieldLocator;
-                break;
-            case "Домашний интернет":
-                locator = By.id("internet-email");
-                break;
-            case "Рассрочка":
-                locator = By.id("instalment-email");
-                break;
-            case "Задолженность":
-                locator = By.id("arrears-email");
-                break;
-            default:
-                throw new IllegalArgumentException("Неизвестная вкладка: " + option);
-        }
-        WebElement amountField = wait.until(ExpectedConditions.elementToBeClickable(locator));
-        return amountField.getAttribute("placeholder");
-    }
-
-
     public void enterPaymentDetails(String option, String identifier, String amount) {
         By identifierLocator;
         By amountLocator;
@@ -331,74 +301,6 @@ public class OnlinePaymentPage {
                     driver.findElements(continueButtonLocator).size() > 0 && driver.findElement(continueButtonLocator).isDisplayed(),
                     driver.findElements(continueButtonLocator).size() > 0 && driver.findElement(continueButtonLocator).isEnabled());
             throw new RuntimeException("Не удалось нажать кнопку 'Продолжить'", e);
-        }
-    }
-
-    public boolean isPopupDisplayed() {
-        try {
-            wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(iframeLocator));
-            logger.info("Переключено на iframe всплывающего окна");
-            WebElement popup = wait.until(ExpectedConditions.visibilityOfElementLocated(popupLocator));
-            boolean isDisplayed = popup.isDisplayed();
-            driver.switchTo().defaultContent();
-            logger.info("Возвращено в основной контент");
-            return isDisplayed;
-        } catch (TimeoutException e) {
-            logger.error("Всплывающее окно не отображено: {}", e.getMessage());
-            driver.switchTo().defaultContent();
-            return false;
-        }
-    }
-
-    public String getPopupAmount() {
-        try {
-            wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(iframeLocator));
-            logger.info("Переключено на iframe для получения суммы");
-            WebElement amount = wait.until(ExpectedConditions.visibilityOfElementLocated(popupAmountLocator));
-            String amountText = amount.getText().replaceAll("[^0-9.]", "");
-            driver.switchTo().defaultContent();
-            logger.info("Возвращено в основной контент");
-            return amountText;
-        } catch (TimeoutException e) {
-            logger.error("Не удалось получить сумму во всплывающем окне: {}", e.getMessage());
-            driver.switchTo().defaultContent();
-            throw new RuntimeException("Не удалось получить сумму во всплывающем окне", e);
-        }
-    }
-
-    public String getPopupButtonAmount() {
-        try {
-            wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(iframeLocator));
-            logger.info("Переключено на iframe для получения суммы на кнопке");
-            WebElement button = wait.until(ExpectedConditions.visibilityOfElementLocated(popupButtonAmountLocator));
-            String buttonText = button.getText().replaceAll("[^0-9.]", "");
-            driver.switchTo().defaultContent();
-            logger.info("Возвращено в основной контент");
-            return buttonText;
-        } catch (TimeoutException e) {
-            logger.error("Не удалось получить сумму на кнопке во всплывающем окне: {}", e.getMessage());
-            driver.switchTo().defaultContent();
-            throw new RuntimeException("Не удалось получить сумму на кнопке во всплывающем окне", e);
-        }
-    }
-
-    public String getPopupIdentifier() {
-        try {
-            wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(iframeLocator));
-            logger.info("Переключено на iframe для получения идентификатора");
-            WebElement identifier = wait.until(ExpectedConditions.visibilityOfElementLocated(popupIdentifierLocator));
-            String identifierText = identifier.getText().replaceAll("[^0-9]", "");
-            if (identifierText.startsWith("375")) {
-                identifierText = identifierText.substring(3);
-                logger.info("Код +375 удалён, итоговый идентификатор: {}", identifierText);
-            }
-            driver.switchTo().defaultContent();
-            logger.info("Возвращено в основной контент");
-            return identifierText;
-        } catch (TimeoutException e) {
-            logger.error("Не удалось получить идентификатор во всплывающем окне: {}", e.getMessage());
-            driver.switchTo().defaultContent();
-            throw new RuntimeException("Не удалось получить идентификатор во всплывающем окне", e);
         }
     }
 
